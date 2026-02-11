@@ -12,16 +12,17 @@ from simulation import Simulation
 # ============================================================
 # Simulation Parameters
 # ============================================================
-num_agents = 20
+num_agents = 10
 boundary_width = 800
 boundary_height = 600
 interaction_radius = 50.0
 time_step = 0.1
 random_std_dev = 0.5
 num_frames = 500
+nrg_gain_rate = 0.01
 
-energy_range = (5.0, 25.0)   # How long agents move
-speed_range = (15.0, 30.0)   # How fast agents move
+energy_range = (0.5, 1)   # How long agents move
+speed_range = (15.0, 100.0)   # How fast agents move
 
 # ============================================================
 # Create Simulation
@@ -32,14 +33,15 @@ sim = Simulation(
     boundary_height=boundary_height,
     interaction_radius=interaction_radius,
     time_step=time_step,
-    random_std_dev=random_std_dev
+    random_std_dev=random_std_dev,
 )
 
 # Initialize agents
 sim.initialize_agents(
     num_agents=num_agents,
     energy_range=energy_range,
-    speed_range=speed_range
+    speed_range=speed_range,
+    nrg_gain=nrg_gain_rate
 )
 
 # ============================================================

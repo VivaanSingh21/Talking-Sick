@@ -4,6 +4,7 @@ from boundary import Boundary
 import random
 import math
 
+debug = True # Toggles debug mode when set to True
 
 class Simulation:
     """Manages the multi-agent simulation"""
@@ -28,7 +29,7 @@ class Simulation:
         self.current_time = 0.0
     
     def initialize_agents(self, num_agents, energy_range=(5.0, 20.0), 
-                         speed_range=(10.0, 30.0)):
+                         speed_range=(10.0, 30.0), nrg_gain=0.01):
         """
         Create agents with random positions, velocities, and varying energy
         
@@ -51,11 +52,20 @@ class Simulation:
             speed = random.uniform(speed_range[0], speed_range[1])
             velocity = Vector2D(math.cos(angle) * speed, math.sin(angle) * speed)
             
-            # Random energy within range
-            energy = random.uniform(energy_range[0], energy_range[1])
+            if debug:
+                # Set energy, decay rate, and gain rate to same value for all agents
+                energy = 1 # should be a fraction (ie <= 1), since it's multiplied by velocity to reduce speed
+                decay = 0.1 # higher values = decay faster, if set higher than 0.3 the agents slow down so fast that they appear to never move again
+                nrg_gain = 0.01 # higher values = restore energy faster
+            else:
+                # Random energy within range
+                energy = random.uniform(energy_range[0], energy_range[1])
+                # Random decay rate within range
+                decay = random.uniform(0 , 0.3)
             
             # Create agent
-            agent = Agent(position, velocity, energy)
+            # right now, radius is being hard coded as 5.0. We may want to change that and make it a setting somewhere
+            agent = Agent(position, velocity, energy, 5.0 , decay , nrg_gain)
             self.agents.append(agent)
         
         print(f"Initialized {num_agents} agents")
@@ -90,8 +100,7 @@ class Simulation:
         """Main simulation update - updates all agents and checks interactions"""
         # Update all agents
         for agent in self.agents:
-            if agent.can_move():
-                agent.update(self.time_step, self.random_std_dev)
+            agent.update(self.time_step, self.random_std_dev)
         
         # Check agent-agent interactions
         self.check_interactions()

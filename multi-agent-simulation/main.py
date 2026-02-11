@@ -6,7 +6,6 @@ Demonstrates the agent-based simulation with interactions
 
 from simulation import Simulation
 
-
 def main():
     """Run example simulation"""
     
@@ -20,14 +19,15 @@ def main():
         boundary_height=600,
         interaction_radius=50.0,
         time_step=0.1,
-        random_std_dev=0.5  # Add some randomness to movement
+        random_std_dev=0.5,  # Add some randomness to movement
     )
     
     # Initialize agents with varying energy levels
     sim.initialize_agents(
         num_agents=20,
-        energy_range=(5.0, 20.0),  # Energy determines how long they move
-        speed_range=(10.0, 30.0)    # Random speeds
+        energy_range=(0.5, 1),  # Energy determines how long they move
+        speed_range=(10.0, 30.0),   # Random speeds
+        nrg_gain=0.01
     )
     
     # Print initial states
