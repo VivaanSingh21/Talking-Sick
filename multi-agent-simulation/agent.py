@@ -146,14 +146,18 @@ class Agent:
             return
         
         # Check if agent is near boundary
-        if boundary.is_near_boundary(self.position, self.radius):
+        buffer = 15.0  # tune this
+        if boundary.is_near_boundary(self.position, self.radius + buffer):
+  
             # Get tangent at boundary
             tangent = boundary.get_tangent_at_point(self.position)
-            
-            # Set velocity to tangent direction
+
+            # keep the tangent direction consistent with current motion
+            if self.velocity.dot(tangent) < 0:
+                tangent = tangent * -1
+
             speed = self.velocity.magnitude()
-            if speed > 0:
-                self.velocity = tangent * speed
+            self.velocity = tangent * speed
             
             # Push agent slightly away from boundary to prevent getting stuck
             normal = boundary.get_normal_at_point(self.position)
