@@ -31,6 +31,9 @@ class Agent:
         
         # Store initial velocity magnitude for reference
         self.base_speed = velocity.magnitude()
+        # Store direction separately so energy scales speed without distorting direction
+        self.base_direction = velocity.normalize() if self.base_speed > 0 else Vector2D(1, 0)
+
 
         # Equivalent to initial energy value, agent will never gain more than this from resting
         self.max_energy = energy
@@ -70,12 +73,18 @@ class Agent:
             # Energy decay
             # Agent should slow down overtime based on decaying energy
             self.energy *= np.exp(-self.nrg_decay * delta_time)
-            self.velocity = self.velocity.__mul__(self.energy)
+
+            # Compute speed directly from energy to avoid compounding velocity shrinkage
+            speed = self.base_speed * self.energy #!Check if speed is a scalar
+            # Reconstruct velocity from direction and energy-scaled speed
+            self.velocity = self.base_direction * speed
+
             #Current code will never let velo reach 0; asymptote exists. Figure out at what point it stops appearing like its moving?
             #Should this be based on velocity, or should stoppage be based on an energy threshold?
             #Right now, agents may stop based on getting too slow before energy ever reaches 0, causing quick slowdowns
             if self.velocity.magnitude() < 1:
-                self.velocity = 0
+                # Stop cleanly when speed becomes negligible
+                self.velocity = Vector2D(0, 0)
                 self.is_moving = False
         else:
             # Restore some of the agent's max energy
@@ -90,7 +99,11 @@ class Agent:
                 self.is_moving = True
                 # Should this just repick a new velocity or follow original speed? should angle be repicked or continue going same direction?
                 angle = random.uniform(0, 2 * math.pi)
-                self.velocity = Vector2D(math.cos(angle) * self.base_speed, math.sin(angle) * self.base_speed)
+                # Update direction on restart so future scaling remains consistent
+                self.base_direction = Vector2D(math.cos(angle), math.sin(angle)).normalize()
+                # Restart at speed proportional to current energy (no full-speed jump)
+                self.velocity = self.base_direction * (self.base_speed * self.energy)
+
     
     def can_move(self):
         """Check if agent has energy left to move"""
@@ -129,6 +142,7 @@ class Agent:
         # Calculate tangent (perpendicular to radial direction)
         # Rotate direction by 90 degrees
         tangent = direction.rotate(math.pi / 2).normalize()
+        self.base_direction = tangent
         
         # Set velocity to tangent direction, maintaining speed
         speed = self.velocity.magnitude()
@@ -150,6 +164,7 @@ class Agent:
         if boundary.is_near_boundary(self.position, self.radius + buffer):
   
             # Get tangent at boundary
+            
             tangent = boundary.get_tangent_at_point(self.position)
 
             # keep the tangent direction consistent with current motion
@@ -158,6 +173,9 @@ class Agent:
 
             speed = self.velocity.magnitude()
             self.velocity = tangent * speed
+            # Persist new direction so energy scaling does not overwrite interaction turn
+            self.base_direction = tangent
+
             
             # Push agent slightly away from boundary to prevent getting stuck
             normal = boundary.get_normal_at_point(self.position)

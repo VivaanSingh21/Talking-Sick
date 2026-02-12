@@ -12,7 +12,7 @@ from simulation import Simulation
 # ============================================================
 # Simulation Parameters
 # ============================================================
-num_agents = 10
+num_agents = 300
 boundary_width = 800
 boundary_height = 600
 interaction_radius = 50.0
